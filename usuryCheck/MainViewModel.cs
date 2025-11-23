@@ -39,7 +39,7 @@ namespace usuryCheck
                     // if missing, create a minimal example file
                     var sample = new List<Jurisdiction>
                 {
-                    new Jurisdiction { Code = "EXAMPLE", Name = "Example land", MaxAprPercent = 0m, Description = "No cap configured (example)"}
+                    new Jurisdiction { Code = "EXAMPLE", Name = "Example land", MaxAprPercent = 100m, Description = "100 cap configured (example)"}
                 };
                     File.WriteAllText(file, JsonSerializer.Serialize(sample, new JsonSerializerOptions { WriteIndented = true }));
                 }

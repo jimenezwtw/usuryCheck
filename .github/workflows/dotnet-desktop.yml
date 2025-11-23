@@ -76,7 +76,7 @@ jobs:
 
     # Publish the app so you get a distributable folder
     - name: Publish WPF app
-      run: dotnet publish ./usuryCheck.csproj -c Release -r win-x64 --self-contained false -o ./publish
+      run: dotnet publish usuryCheck/usuryCheck.csproj -c Release -r win-x64 --self-contained false -o ./publish
 
     # Upload build artifacts
     - name: Upload artifact
