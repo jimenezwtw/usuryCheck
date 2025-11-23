@@ -48,6 +48,24 @@
     "Description": "Italian ‘usury’ threshold law — interest rates cannot exceed ~50% of bank APR per older usury legislation. :contentReference[oaicite:8]{index=8}"
   },
   {
+    "Code": "JP",
+    "Name": "Japan (National)",
+    "MaxAprPercent": 20.0,
+    "Description": "Tiered caps: 20% for small loans, 15% for large loans."
+  },
+  {
+    "Code": "PH",
+    "Name": "Philippines (National)",
+    "MaxAprPercent": 12.0,
+    "Description": "Philippines suspended ceilings, but regulators can impose limits."
+  },
+  {
+    "Code": "SG",
+    "Name": "Singapore",
+    "MaxAprPercent": 48.0,
+    "Description": "capped at 4% per month on overdue amounts.This translates to about 48% APR if compounded annually."
+  },
+  {
     "Code": "CH",
     "Name": "Switzerland",
     "MaxAprPercent": 10.0,

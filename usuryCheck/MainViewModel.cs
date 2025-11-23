@@ -74,7 +74,7 @@ namespace usuryCheck
                 OnPropertyChanged();
             }
         }
-
+        public int TermYears => termMonths / 12;
         private decimal annualRatePercent;
         public string AnnualRatePercent
         {
