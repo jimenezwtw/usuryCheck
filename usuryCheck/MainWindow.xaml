@@ -3,9 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:usuryCheck"
         mc:Ignorable="d"
-        Title="Usury Detection" Height="500" Width="800">
+        Title="Usury Detector" Height="420" Width="720">
     <Window.Resources>
         <!-- Simple numeric textbox style: right-align -->
         <Style x:Key="NumericTextBox" TargetType="TextBox">
@@ -14,71 +13,115 @@
     </Window.Resources>
 
     <Grid Margin="2">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="12"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="12"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-        <!-- Left: Form -->
-        <StackPanel Grid.Column="0" Margin="0,0,12,0" VerticalAlignment="Top" >
-            <TextBlock FontSize="18" Text="Usury Detector" Margin="0,0,0,8" FontFamily="Segoe UI Black"/>
-            <UniformGrid Columns="2" Rows="3" Margin="0,0,0,8" HorizontalAlignment="Stretch">
-                <StackPanel Margin="6">
-                    <TextBlock>Principal Amount:</TextBlock>
-                    <TextBox x:Name="PrincipalBox" />
+        <!-- Title bar -->
+        <Border Padding="12" Background="#FFFBD8D8" CornerRadius="6" Grid.Row="0">
+            <DockPanel>
+                <TextBlock Text="Usury Detector" FontSize="20" FontWeight="Bold" />
+                <TextBlock Text="  – Enter Data" Foreground="#667" Margin="6,0,0,0"/>
+            </DockPanel>
+        </Border>
+
+        <!-- Inputs -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="24"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left column -->
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Principal -->
+                <StackPanel Orientation="Horizontal" Grid.Row="0" VerticalAlignment="Center">
+                    <TextBlock Text="Principal Amount:" Width="100" VerticalAlignment="Center"/>
+                    <TextBox Style="{StaticResource NumericTextBox}" Width="180" FontFamily="Cascadia Mono SemiBold"
+                             Text="{Binding Principal, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
 
-                <StackPanel Margin="6">
-                    <TextBlock>Annual Rate (%):</TextBlock>
-                    <TextBox x:Name="AnnualRateBox" />
+                <!-- Term -->
+                <StackPanel Orientation="Horizontal" Grid.Row="2" VerticalAlignment="Center">
+                    <TextBlock Text="Term (months):" Width="100" VerticalAlignment="Center"/>
+                    <TextBox Style="{StaticResource NumericTextBox}" Width="180"
+                             Text="{Binding TermMonths, UpdateSourceTrigger=PropertyChanged}" FontFamily="Cascadia Mono SemiBold"/>
                 </StackPanel>
 
-                <StackPanel Margin="6">
-                    <TextBlock>Term (months):</TextBlock>
-                    <TextBox x:Name="TermBox" />
+                <!-- Jurisdiction -->
+                <StackPanel Orientation="Horizontal" Grid.Row="4" VerticalAlignment="Center">
+                    <TextBlock Text="Jurisdiction:" Width="100" VerticalAlignment="Center"/>
+                    <ComboBox Width="220"
+                              ItemsSource="{Binding Jurisdictions}"
+                              SelectedItem="{Binding SelectedJurisdiction}"/>
                 </StackPanel>
 
-                <StackPanel Margin="6">
-                    <TextBlock>Up-front Fees:</TextBlock>
-                    <TextBox x:Name="FeesBox" />
+                <!-- Include fees -->
+                <CheckBox Grid.Row="6"
+                          Content="Include fees in APR"
+                          IsChecked="{Binding IncludeFeesInAPR}"/>
+            </Grid>
+
+            <!-- Right column -->
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Annual Rate -->
+                <StackPanel Orientation="Horizontal" Grid.Row="0" VerticalAlignment="Center">
+                    <TextBlock Text="Annual Rate (%):" Width="100" VerticalAlignment="Center"/>
+                    <TextBox Style="{StaticResource NumericTextBox}" Width="180" FontFamily="Cascadia Mono SemiBold"
+                             Text="{Binding AnnualRatePercent, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
 
-                <StackPanel Margin="6">
-                    <TextBlock>Jurisdiction:</TextBlock>
-                    <ComboBox x:Name="JurisdictionBox" />
+                <!-- Up-front fees -->
+                <StackPanel Orientation="Horizontal" Grid.Row="2" VerticalAlignment="Center">
+                    <TextBlock Text="Up-front Fees:" Width="100" VerticalAlignment="Center"/>
+                    <TextBox Style="{StaticResource NumericTextBox}" Width="180" FontFamily="Cascadia Mono SemiBold"
+                             Text="{Binding UpfrontFees, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
 
-                <StackPanel Margin="6">
-                    <CheckBox x:Name="IncludeFeesCheck" Content="Include fees in APR" IsChecked="True"/>
+                <!-- Buttons -->
+                <StackPanel Orientation="Horizontal" Grid.Row="4" HorizontalAlignment="Left" >
+                    <Button Content="Calculate" Width="110" Height="32" 
+                            Command="{Binding CalculateCommand}" Background="#FF8EE078" FontFamily="Noto Sans JP Medium"/>
+                    <Button Content="Reset" Width="90" Height="32" Background="#FF6F0B71" FontFamily="Noto Sans JP Medium"
+                            Command="{Binding ResetCommand}" Foreground="White"/>
                 </StackPanel>
-            </UniformGrid>
+            </Grid>
+        </Grid>
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="6">
-                <Button x:Name="CalculateButton" Content="Calculate" Width="110" Margin="0,0,8,0" Click="CalculateButton_Click"/>
-                <Button x:Name="ResetButton" Content="Reset" Width="110" Click="ResetButton_Click"/>
-            </StackPanel>
-        </StackPanel>
-
-        <!-- Right: Result card -->
-        <Border Grid.Column="1" Background="#FFBFD2B8" CornerRadius="8" Padding="12" BorderBrush="#FFDDDDDD" BorderThickness="1">
-            <StackPanel>
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Image x:Name="ResultIcon" Width="42" Height="42" Margin="0,0,8,0"/>
-                    <TextBlock x:Name="ResultMainText" Text="Result goes here" VerticalAlignment="Center" FontSize="14" TextWrapping="Wrap" FontFamily="Noto Sans JP Black"/>
+        <!-- Result panel -->
+        <Border Grid.Row="4" Padding="12" BorderBrush="#CCD3DB" BorderThickness="1" CornerRadius="6">
+            <DockPanel>
+                <TextBlock Text="⚖" FontSize="22" Margin="0,0,8,0" VerticalAlignment="Top"/>
+                <StackPanel>
+                    <TextBlock Text="{Binding ResultTitle}" FontSize="16" FontWeight="Bold"/>
+                    <TextBlock Text="{Binding ResultDetail}" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                    <StackPanel x:Name="DetailsPanel" Margin="0,8,0,0">
+                    </StackPanel>
                 </StackPanel>
-
-                <Separator Margin="0,8"/>
-
-                <StackPanel x:Name="DetailsPanel" Margin="0,8,0,0">
-                    <TextBlock x:Name="DetailLine1" Text="—" Margin="0,4"/>
-                    <TextBlock x:Name="DetailLine2" Text="—" Margin="0,4"/>
-                    <TextBlock x:Name="DetailLine3" Text="—" Margin="0,4"/>
-                    <TextBlock x:Name="DetailLine4" Text="—" Margin="0,4"/>
-                </StackPanel>
-
-                <TextBlock x:Name="FooterNote" FontStyle="Italic" FontSize="11" Foreground="DarkGoldenrod" Margin="0,12,0,0"
-                           Text="Jurisdiction caps are loaded from jurisdictions.json (editable)."/>
-            </StackPanel>
+            </DockPanel>
         </Border>
     </Grid>
 </Window>

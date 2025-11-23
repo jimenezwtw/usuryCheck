@@ -5,6 +5,8 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows.Input;
+using System.IO;
+using System.Text.Json;
 
 namespace usuryCheck
 {
@@ -15,8 +17,7 @@ namespace usuryCheck
         private void OnPropertyChanged([CallerMemberName] string? name = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
-        public ObservableCollection<SupportedJurisdiction> Jurisdictions { get; } =
-            new ObservableCollection<SupportedJurisdiction>((SupportedJurisdiction[])Enum.GetValues(typeof(SupportedJurisdiction)));
+        public ObservableCollection<ComboBoxItemWrapper> Jurisdictions { get; } = WrapJurisdictions();
 
         private decimal principal;
         public string Principal
@@ -28,7 +29,41 @@ namespace usuryCheck
                 OnPropertyChanged();
             }
         }
+        private static IList<Jurisdiction> LoadJurisdictions()
+        {
+            try
+            {
+                var file = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "jurisdictions.json");
+                if (!File.Exists(file))
+                {
+                    // if missing, create a minimal example file
+                    var sample = new List<Jurisdiction>
+                {
+                    new Jurisdiction { Code = "EXAMPLE", Name = "Example land", MaxAprPercent = 0m, Description = "No cap configured (example)"}
+                };
+                    File.WriteAllText(file, JsonSerializer.Serialize(sample, new JsonSerializerOptions { WriteIndented = true }));
+                }
 
+                var json = File.ReadAllText(file); 
+                var _jurisdictions = JsonSerializer.Deserialize<List<Jurisdiction>>(json) ?? new List<Jurisdiction>();
+
+                return _jurisdictions;
+            }
+            catch (Exception ex)
+            {
+                return new List<Jurisdiction>();
+            }
+        }
+        static ObservableCollection<ComboBoxItemWrapper> WrapJurisdictions()
+        {
+            ObservableCollection<ComboBoxItemWrapper> wrapped= new ObservableCollection<ComboBoxItemWrapper>();
+            IList<Jurisdiction> givenJurisdictions = LoadJurisdictions();
+            foreach (var j in givenJurisdictions)
+            {
+                wrapped.Add(new ComboBoxItemWrapper { Text = $"{j.Name} ({j.Code})", Value = j }); 
+            }
+            return wrapped;
+        }
         private int termMonths;
         public string TermMonths
         {
@@ -69,8 +104,8 @@ namespace usuryCheck
             set { includeFeesInAPR = value; OnPropertyChanged(); }
         }
 
-        private SupportedJurisdiction selectedJurisdiction = SupportedJurisdiction.None;
-        public SupportedJurisdiction SelectedJurisdiction
+        private ComboBoxItemWrapper selectedJurisdiction = new ComboBoxItemWrapper { Text=""};
+        public ComboBoxItemWrapper SelectedJurisdiction
         {
             get => selectedJurisdiction;
             set { selectedJurisdiction = value; OnPropertyChanged(); }
@@ -122,7 +157,7 @@ namespace usuryCheck
             var effectiveAPR = effectiveMonthlyRate * 12m * 100m; // back to percent
 
             // Compare to jurisdiction cap (placeholder values; replace with actual legal caps)
-            var (capPercent, label) = GetCapForJurisdiction(SelectedJurisdiction);
+            var (capPercent, label) = GetCapForJurisdiction((Jurisdiction)selectedJurisdiction.Value);
             var complies = effectiveAPR <= capPercent;
 
             ResultTitle = complies
@@ -135,15 +170,9 @@ namespace usuryCheck
                 $"Inputs — Principal: {principal:C}, Term: {termMonths} months, Up-front Fees: {upfrontFees:C}.";
         }
 
-        private (decimal capPercent, string label) GetCapForJurisdiction(SupportedJurisdiction j)
+        private (decimal capPercent, string label) GetCapForJurisdiction(Jurisdiction j)
         {
-            return j switch
-            {
-                SupportedJurisdiction.US_Federal => (36m, "U.S. federal (typical consumer cap proxy)"),
-                SupportedJurisdiction.Philippines => (60m, "Philippines (placeholder cap)"),
-                SupportedJurisdiction.EU_Generic => (20m, "EU generic (illustrative)"),
-                _ => (100m, "No selected jurisdiction (no cap applied)")
-            };
+            return (j.MaxAprPercent, j.Name);
         }
 
         private void Reset()
@@ -153,7 +182,7 @@ namespace usuryCheck
             AnnualRatePercent = "0";
             UpfrontFees = "0";
             IncludeFeesInAPR = false;
-            SelectedJurisdiction = SupportedJurisdiction.None;
+            SelectedJurisdiction = WrapJurisdictions().First();
             ResultTitle = "Result goes here – e.g. \"Loan complies with XYZ law.\"";
             ResultDetail = string.Empty;
         }
@@ -176,5 +205,11 @@ namespace usuryCheck
         public bool CanExecute(object? parameter) => _canExecute?.Invoke(parameter) ?? true;
         public void Execute(object? parameter) => _execute(parameter);
         public event EventHandler? CanExecuteChanged;
+    }
+    public class ComboBoxItemWrapper
+    {
+        public string Text { get; set; }
+        public object Value { get; set; }
+        public override string ToString() => Text;
     }
 }

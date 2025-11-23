@@ -12,7 +12,7 @@ namespace usuryCheck
         /// Maximum APR allowed by that jurisdiction, expressed as percent (e.g. 36.0 for 36%).
         /// Use 0 or negative to mean "no cap configured".
         /// </summary>
-        public double MaxAprPercent { get; set; } = 0.0;
+        public decimal MaxAprPercent { get; set; } = 0m;
         public string Description { get; set; } = "";
     }
 
